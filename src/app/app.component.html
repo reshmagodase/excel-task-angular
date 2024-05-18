@@ -1,0 +1,308 @@
+<div class="container">
+  <div class="mt-3 mb-5" align="right">
+    <button class="btn btn-md btn-outline-info" (click)="exportJson()">Export to Excel</button>
+    &nbsp;
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">
+      Add Values
+    </button>
+  </div>
+
+  <div>
+    <div align="center">
+      <h2>VENDER LIST</h2>
+      <br>
+    </div>
+    <table class="table">
+      <thead>
+        <tr style="background-color: rgb(72, 71, 71);">
+          <th>Id</th>
+          <th>Request Date</th>
+          <th>Vendor Name</th>
+          <th>Rate Card</th>
+          <th>Rate</th>
+          <th>Project Name</th>
+          <th>Status</th>
+          <th>Budget Hrs</th>
+          <th>Remarks</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let vendor of vendorsArray">
+          <td>{{ vendor.id }}</td>
+          <td>{{ vendor.requestDate | date }}</td>
+          <td>{{ vendor.vendorName }}</td>
+          <td>{{ vendor.rateCard }}</td>
+          <td>{{ vendor.rate }}</td>
+          <td>{{ vendor.projectName }}</td>
+          <td>{{ vendor.status }}</td>
+          <td>{{ vendor.budgetHrs }}</td>
+          <td>{{ vendor.remarks }}</td>
+          <td>
+            <span (click)="deleteRow(vendor)"><i class="bi bi-trash text-danger"></i> </span>
+
+            <span [ngClass]="vendor.status == 'save' ? 'displayNone': 'display'" (click)="viewDetails(vendor)"
+              data-bs-toggle="modal" data-bs-target="#DetailsModal">&nbsp;&nbsp;&nbsp;<i class="bi bi-view-list text-success"></i></span>
+            &nbsp;
+
+            <span [ngClass]="vendor.status == 'submit' ? 'displayNone': 'display'"
+              (click)="patchAllValues(updateValuesModal,vendor)"><i class="bi bi-pen text-warning"></i></span>
+
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+
+<ng-template #updateValuesModal let-modal class="borderstyle">
+  <div class="modal-header">
+    <div class="modal-title">UPDATE VENDOR</div>
+    <button type="button" class="close text-white" aria-label="Close" (click)="modal.dismiss('Cross click')"> <span
+        aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="container py-4 px-5" style="background-color: rgb(236, 234, 234); border-radius: 10px;">
+
+    <form [formGroup]="UpdateVendorform">
+      <div class="form-group row">
+        <div class="col-lg-12">
+          <label class="col-form-label">Request Date:</label>
+          <input type="date" class="form-control" formControlName="requestDate"
+            [ngClass]="{'is-invalid' : submitted && f['requestDate'].errors }">
+          <div *ngIf="submitted && f['requestDate'].errors" class="invalid-feedback">
+            <div *ngIf="f['requestDate'].errors?.['required']">Required Field
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-12">
+          <label class="col-form-label">Vendor Name:</label>
+          <select class="form-control" formControlName="vendorName" (change)="onChangeReference($event)"
+            [ngClass]="{'is-invalid' : submitted && f['vendorName'].errors }">
+            <option value="">--Please Select--</option>
+            <option value="TCS">TCS</option>
+            <option value="Honeywell">Honeywell</option>
+            <option value="HCL">HCL</option>
+          </select>
+          <div *ngIf="submitted && f['vendorName'].errors" class="invalid-feedback">
+            <div *ngIf="f['vendorName'].errors?.['required']">Required Field
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="SelectVendor=='TCS'" class="col-lg-12">
+          <label class="col-form-label"> Select Rate Card:</label>
+          <select class="form-control" formControlName="rateCard" (change)="onChangeRateCardValue($event)">
+            <option value="rate_card_1">Rate card 1</option>
+            <option value="rate_card_2">Rate card 2</option>
+          </select>
+        </div>
+
+        <div *ngIf="SelectVendor=='Honeywell'" class="col-lg-12">
+          <label class="col-form-label"> Select Rate Card:</label>
+          <select class="form-control" formControlName="rateCard" (change)="onChangeRateCardValue($event)">
+            <option value="rate_card_2">Rate card 2</option>
+            <option value="rate_card_3">Rate card 3</option>
+          </select>
+        </div>
+
+        <div *ngIf="SelectVendor=='HCL'" class="col-lg-12">
+          <label class="col-form-label">Select Rate Card:</label>
+          <select class="form-control" formControlName="rateCard" (change)="onChangeRateCardValue($event)">
+            <option value="rate_card_4">Rate card 4</option>
+          </select>
+        </div>
+
+        <div class="col-lg-12">
+          <label class="col-form-label">Rate:</label>
+          <input type="text" class="form-control" formControlName="rate" readonly>
+        </div>
+
+        <div class="col-lg-12">
+          <label class="col-form-label">Project Name:</label>
+          <input type="text" class="form-control" formControlName="projectName"
+            [ngClass]="{'is-invalid' : submitted && f['projectName'].errors }">
+          <div *ngIf="submitted && f['projectName'].errors" class="invalid-feedback">
+            <div *ngIf="f['projectName'].errors?.['required']">Required Field
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+
+
+      <div class="col-lg-12">
+        <label class="col-form-label">Budget Hrs:</label>
+        <input type="text" formControlName="budgetHrs" class="form-control"
+          [ngClass]="{'is-invalid' : submitted && f['budgetHrs'].errors }">
+        <div *ngIf="submitted && f['budgetHrs'].errors" class="invalid-feedback">
+          <div *ngIf="f['budgetHrs'].errors?.['required']">Required Field
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-12">
+        <label class="col-form-label">Remarks:</label>
+        <textarea class="form-control" formControlName="remarks"
+          [ngClass]="{'is-invalid' : submitted && f['remarks'].errors }"></textarea>
+        <div *ngIf="submitted && f['remarks'].errors" class="invalid-feedback">
+          <div *ngIf="f['remarks'].errors?.['required']">Required Field
+          </div>
+        </div>
+      </div>
+
+
+      <div class="col-lg-12">
+        <label class="col-form-label">Attachment:</label>
+        <input type="file" formControlName="attachment" class="form-control-file form-control"
+          (change)="onFileSelected($event)">
+      </div>
+
+      <div class="form-group " style="margin-top: 2rem;">
+        <!-- <button class="btn btn-primary" style="margin-right: 10px;" (click)="onSave()">Create</button> -->
+        <button class="btn btn-primary" style="margin-right: 10px;" (click)="onSubmit()">Submit</button>
+        <button class="btn btn-secondary">Cancel</button>
+      </div>
+    </form>
+  </div>
+</ng-template>
+
+
+
+<!-- ==================================================== -->
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">ADD VENDOR FORM</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container py-4 px-5" style="background-color: rgb(236, 234, 234); border-radius: 10px;">
+          <form [formGroup]="vendorform">
+            <div class="form-group row">
+              <div class="col-lg-12">
+                <label class="col-form-label">Request Date:</label>
+                <input type="date" class="form-control" formControlName="requestDate"
+                  [ngClass]="{'is-invalid' : submitted && f['requestDate'].errors }">
+                <div *ngIf="submitted && f['requestDate'].errors" class="invalid-feedback">
+                  <div *ngIf="f['requestDate'].errors?.['required']">Required Field
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-lg-12">
+                <label class="col-form-label">Vendor Name:</label>
+                <select class="form-control" formControlName="vendorName" (change)="onChangeReference($event)"
+                  [ngClass]="{'is-invalid' : submitted && f['vendorName'].errors }">
+                  <option value="">--Please Select--</option>
+                  <option value="TCS">TCS</option>
+                  <option value="Honeywell">Honeywell</option>
+                  <option value="HCL">HCL</option>
+                </select>
+                <div *ngIf="submitted && f['vendorName'].errors" class="invalid-feedback">
+                  <div *ngIf="f['vendorName'].errors?.['required']">Required Field
+                  </div>
+                </div>
+              </div>
+
+              <div *ngIf="SelectVendor=='TCS'" class="col-lg-12">
+                <label class="col-form-label"> Select Rate Card:</label>
+                <select class="form-control" formControlName="rateCard" (change)="onChangeRateCardValue($event)">
+                  <option value="rate_card_1">Rate card 1</option>
+                  <option value="rate_card_2">Rate card 2</option>
+                </select>
+              </div>
+
+              <div *ngIf="SelectVendor=='Honeywell'" class="col-lg-12">
+                <label class="col-form-label"> Select Rate Card:</label>
+                <select class="form-control" formControlName="rateCard" (change)="onChangeRateCardValue($event)">
+                  <option value="rate_card_2">Rate card 2</option>
+                  <option value="rate_card_3">Rate card 3</option>
+                </select>
+              </div>
+
+              <div *ngIf="SelectVendor=='HCL'" class="col-lg-12">
+                <label class="col-form-label">Select Rate Card:</label>
+                <select class="form-control" formControlName="rateCard" (change)="onChangeRateCardValue($event)">
+                  <option value="rate_card_4">Rate card 4</option>
+                </select>
+              </div>
+
+              <div class="col-lg-12">
+                <label class="col-form-label">Rate:</label>
+                <input type="text" class="form-control" formControlName="rate" readonly>
+              </div>
+
+              <div class="col-lg-12">
+                <label class="col-form-label">Project Name:</label>
+                <input type="text" class="form-control" formControlName="projectName"
+                  [ngClass]="{'is-invalid' : submitted && f['projectName'].errors }">
+                <div *ngIf="submitted && f['projectName'].errors" class="invalid-feedback">
+                  <div *ngIf="f['projectName'].errors?.['required']">Required Field
+                  </div>
+                </div>
+              </div>
+            </div>
+            <br>
+
+            <div class="col-lg-12">
+              <label class="col-form-label">Budget Hrs:</label>
+              <input type="text" formControlName="budgetHrs" class="form-control"
+                [ngClass]="{'is-invalid' : submitted && f['budgetHrs'].errors }">
+              <div *ngIf="submitted && f['budgetHrs'].errors" class="invalid-feedback">
+                <div *ngIf="f['budgetHrs'].errors?.['required']">Required Field
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-12">
+              <label class="col-form-label">Remarks:</label>
+              <textarea class="form-control" formControlName="remarks"
+                [ngClass]="{'is-invalid' : submitted && f['remarks'].errors }"></textarea>
+              <div *ngIf="submitted && f['remarks'].errors" class="invalid-feedback">
+                <div *ngIf="f['remarks'].errors?.['required']">Required Field
+                </div>
+              </div>
+            </div>
+
+
+            <div class="col-lg-12">
+              <label class="col-form-label">Attachment:</label>
+              <input type="file" formControlName="attachment" class="form-control-file form-control"
+                (change)="onFileSelected($event)">
+            </div>
+
+            <div class="form-group " style="margin-top: 2rem;">
+              <button class="btn btn-primary" style="margin-right: 10px;" (click)="onSave()">save</button>
+              <button class="btn btn-primary" style="margin-right: 10px;" (click)="onSubmit()">Submit</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" aria-label="Close">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="DetailsModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">VENDOR DETAILS</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="container py-4 px-5" style="background-color: rgb(236, 234, 234); border-radius: 10px;">
+          {{id}}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
